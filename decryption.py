@@ -15,72 +15,65 @@ def main():
 
     letters = []
 
-    with open('w_pustyni_i_w_puszczy.txt', 'r', encoding='utf-8') as f:
-        lines = f.readlines()
-        print(len(lines[0]))
+    # with open('w_pustyni_i_w_puszczy.txt', 'r', encoding='utf-8') as f:
+    #     lines = f.readlines()
+    #     print(len(lines[0]))
 
-        for letter in lines[0]:
-            if letter in letters:
-                continue
-            letters.append(letter)
+    #     for letter in lines[0]:
+    #         if letter in letters:
+    #             continue
+    #         letters.append(letter)
 
-        print(len(letters))
+    #     print(len(letters))
 
-        letters.sort()
-        print(letters)
+    #     letters.sort()
+    #     print(letters)
 
     letters = letters[1::]
 
     width = img.shape[1]
-    print(f'Image width:{width}')
     height = img.shape[0]
-    print(f'Image height:{height}')
+    # print(f'Image width:{width}')
+    # print(f'Image height:{height}')
 
-
-    colours = []
     all_colours = []
-
-    for i in range(1):
-        for j in range(width):
-            if img[i,j,:].tolist() not in colours and img[i,j,:].tolist() != [0,0,0]:
-                colours.append(img[i,j,:].tolist())
 
     for i in range(height):
         for j in range(width):
             if img[i,j,:].tolist() not in all_colours:
-                print(f'({i}, {j})')
+                # print(f'({i}, {j})')
                 all_colours.append(img[i,j,:].tolist())
 
-    print(f'All colours amount = {len(all_colours)}')
-    print(f'All colours = {all_colours}')
+    # vertices = detect_vertices(img)
 
-    print(f'Colours in row = {colours}')
-    print(f'Amount of colours = {len(colours)}')
+    # for pair in vertices:
+    #     img[pair[0], pair[1]] = [255, 255, 255]
 
-    parsed_colours = []
+    # img_with_letters = Image.fromarray(img)
+    # img_with_letters.save('vertices.png')
 
-    for colour in colours:
-        parsed_colours.append(letters[(sum(colour) % 64) - 1])
+    stats = colors_statistics(img)
+    print(stats)
 
-    print(f'Letters parsed from colours = {parsed_colours}')
+    img_after_detection = detect_words(img, stats, treshold=800)
+    img = Image.fromarray(img_after_detection)
+    img.save('detected.png')
 
-    # slice_to_chunks(img)
+def colors_statistics(img):
+    width = img.shape[1]
+    height = img.shape[0]
 
-    # grouped_colors = group_colors(all_colours)
+    statistics = {}
 
-    # for group in grouped_colors:
-    #     print(group)
-    #     print('='*80)
+    for i in range(height):
+        for j in range(width):
+            color = np.array2string(img[i,j,:])
+            if color not in statistics:
+                statistics[color] = 1
+            else:
+                statistics[color] += 1
 
-    vertices = detect_vertices(img)
-    print(len(vertices))
-    print(vertices)
-
-    for pair in vertices:
-        img[pair[0], pair[1]] = [255, 255, 255]
-
-    img = Image.fromarray(img)
-    img.save('vertices.png')
+    return statistics
 
 def slice_to_chunks(img):
     print(img.shape)
@@ -94,19 +87,18 @@ def slice_to_chunks(img):
             im = Image.fromarray(chunk)
             im.save(f'chunks/{i}__{j}.png')
 
-def check_to_group(c1, c2):
-    if abs(c1[0] - c2[0]) == 1:
+def check_to_group(c1, c2, diff=1):
+    if abs(c1[0] - c2[0]) <= diff and c1[0] != c2[0]:
         return True
     
-    if abs(c1[1] - c2[1]) == 1:
+    if abs(c1[1] - c2[1]) <= diff and c1[1] != c2[1]:
         return True
     
-    if abs(c1[2] - c2[2]) == 1:
+    if abs(c1[2] - c2[2]) <= diff and c1[2] != c2[2]:
         return True
 
     return False
     
-
 def group_colors(all_colors):
     grouped_colors = []
     grouped_id = []
@@ -171,12 +163,8 @@ def detect_vertices(img):
                     
     return vertices
 
-# def check_for_mark(chunk):
-#     if 
-
-def detect_words(img):
+def detect_words(img, stats, treshold=1000):
     height, width = img.shape[:2]
-    vertices = []
 
     for i in range(height):
         for j in range(width):
@@ -186,10 +174,11 @@ def detect_words(img):
             if j == 0 or j == width - 1:
                 pass
             
-            chunk = img[i-1:i+2, j-1:j+2]
-            if sum_neighbors(chunk) >= 3:
-                if not check_if_edge(chunk):
-                    vertices.append((i, j))
+            color = np.array2string(img[i,j,:])
+            if stats[color] <= treshold:
+                img[i,j,:] = [255,255,255]
+
+    return img
                     
             
 
