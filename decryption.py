@@ -8,23 +8,23 @@ def main():
     print('Script started')
     parser = argparse.ArgumentParser(description='CLI argument processing')
     parser.add_argument('--image_path', required=True, help='Path to image that is meant to be processed')
-    parser.add_argument('--offset', required=False, default=3, help='Path to image that is meant to be processed')
     args = parser.parse_args()
 
+    start = datetime.datetime.now()
     print('Reading image')
     img = read_image(args.image_path)
     print(f'Read image with shape{img.shape}')
 
-    start = datetime.datetime.now()
     stats = colors_statistics(img)
     # print(stats)
 
-    img_after_detection = detect_words(img, stats, treshold=1400)
+    img = detect_words(img, stats, treshold=1400)
 
     end = datetime.datetime.now()
     duration = (end - start).seconds
     print(f'Duration: {duration}s')
-    img = Image.fromarray(img_after_detection)
+    print(img.shape)
+    img = Image.fromarray(img)
     img.save('detected.png')
 
 def colors_statistics(img):
@@ -46,13 +46,14 @@ def colors_statistics(img):
 def detect_words(img, stats, treshold=1000):
     height, width = img.shape[:2]
 
+    new_img = np.zeros(shape=(img.shape[0], img.shape[1]), dtype=np.uint8)
     for i in range(height):
         for j in range(width):
             color = np.array2string(img[i,j,:])
             if stats[color] <= treshold:
-                img[i,j,:] = [255,255,255]
+                new_img[i,j] = 255
 
-    return img
+    return new_img
 
 if __name__ == '__main__':
     main()
