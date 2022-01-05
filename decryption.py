@@ -46,7 +46,7 @@ def get_word_lengths_from_contours(contours, img_width):
         for val in line:
             all_widths.append(val[2])
 
-    median = all_widths[len(all_widths) // 2]    
+    median = all_widths[len(all_widths) // 2]
     word_lengths = []
     diffs = []
     all_contours = []
@@ -142,15 +142,23 @@ def colors_statistics(img):
 
     statistics = {}
 
-    for i in range(height):
-        for j in range(width):
-            color = np.array2string(img[i,j,:])
-            if color not in statistics:
-                statistics[color] = 1
-            else:
-                statistics[color] += 1
+    # for i in range(height):
+    #     for j in range(width):
+    #         color = np.array2string(img[i,j,:])
+    #         if color not in statistics:
+    #             statistics[color] = 1
+    #         else:
+    #             statistics[color] += 1
+    im_pil = Image.fromarray(img)
+    stats_arr = im_pil.getcolors(maxcolors=256)
 
-    return statistics
+    colors_statistics = {}
+    for color in stats_arr:
+        color_str = f'[{color[1][0]} {color[1][1]} {color[1][2]}]'
+        colors_statistics[color_str] = color[0]
+    
+    print(colors_statistics)
+    return colors_statistics
 
 def if_simmilar(first, second, diff=5):
     f = np.array([int(x) for x in first[1:-1].split(' ') if x != ' ' and x != ''], dtype=int)
@@ -162,22 +170,33 @@ def if_simmilar(first, second, diff=5):
     if calculated_diff <= diff: return True
     return False
 
+# def map_to_binary(img_cell, to_color):
+#     color = np.array2string(img_cell)
+#     if color in to_color:
+#         return 255
+#     return 0
+
 def detect_words(img, stats):
     height, width = img.shape[:2]
 
-    to_color = []
+    to_color = {}
     for k,v in stats.items():
         for k_2, v_2 in stats.items():
             if k != k_2 and v_2 > v and if_simmilar(k, k_2):
-                to_color.append(k)
+                to_color[k] = 1
 
     new_img = np.zeros(shape=(img.shape[0], img.shape[1]), dtype=np.uint8)
+    doopa = datetime.datetime.now()
     for i in range(height):
         for j in range(width):
             color = np.array2string(img[i, j, :])
             if color in to_color:
                 new_img[i, j] = 255
-
+    # mapper_function = np.vectorize(map_to_binary)
+    # new_img = mapper_function(img[:,:,:], to_color)
+    goowno = datetime.datetime.now()
+    duration = (goowno - doopa).total_seconds() * 1000
+    print(f'DOOOOOpa {duration}ms')
     return new_img
 
 def find_word_regex(words_lengths):
