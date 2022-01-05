@@ -1,10 +1,11 @@
 import argparse
-from typing import final
 from utils import (read_image)
 from PIL import Image
 import numpy as np
 import datetime
 import cv2
+import re
+
 
 def main():
     print('Script started')
@@ -242,11 +243,30 @@ def detect_words(img, stats):
     new_img = np.zeros(shape=(img.shape[0], img.shape[1]), dtype=np.uint8)
     for i in range(height):
         for j in range(width):
-            color = np.array2string(img[i,j,:])
+            color = np.array2string(img[i, j, :])
             if color in to_color:
-                new_img[i,j] = 255
+                new_img[i, j] = 255
 
     return new_img
+
+
+def regex_costam(words_lengths):
+    start = datetime.datetime.now()
+    search_string = " ".join(["." * word_len for word_len in words_lengths])
+
+    with open("w_pustyni_i_w_puszczy.txt", "r") as f:
+        txt = f.read()
+    sentence = re.search(search_string, txt)
+
+    end = datetime.datetime.now()
+    duration = (end - start).microseconds / 1000
+    first_word_index = txt[:sentence.start()].count(" ") + 1
+    last_word_index = first_word_index + sentence.group().count(" ")
+    print(f'Duration: {duration}ms')
+
+    print(f"first word index:{first_word_index}, last word index:{last_word_index}")
+    print(f'the sentence: {sentence.group()}')
+
 
 if __name__ == '__main__':
     main()
