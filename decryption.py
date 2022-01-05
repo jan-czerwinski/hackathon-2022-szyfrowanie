@@ -226,7 +226,7 @@ def detect_words(img, stats):
     return new_img
 
 
-def regex_costam(words_lengths: list[int]):
+def regex_costam(words_lengths):
     start = datetime.datetime.now()
     search_string = " ".join(["." * word_len for word_len in words_lengths])
 
