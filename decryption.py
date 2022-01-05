@@ -142,14 +142,14 @@ def colors_statistics(img):
 
     colors_statistics = {}
     for color in stats_arr:
-        color_str = np.array2string(np.array([color[1][0], color[1][1], color[1][2]]))
-        colors_statistics[color_str] = color[0]
+        color_tuple = (color[1][0], color[1][1], color[1][2])
+        colors_statistics[color_tuple] = color[0]
     
     return colors_statistics
 
 def if_simmilar(first, second, diff=5):
-    f = np.array([int(x) for x in first[1:-1].split(' ') if x != ' ' and x != ''], dtype=int)
-    s = np.array([int(x) for x in second[1:-1].split(' ') if x != ' ' and x != ''], dtype=int)
+    f = np.array(list(first))
+    s = np.array(list(second))
     calculated_diff = 0
     for i in range(f.shape[0]):
         calculated_diff += abs(f[i] - s[i])
@@ -169,7 +169,7 @@ def detect_words(img, stats):
     new_img = np.zeros(shape=(img.shape[0], img.shape[1]), dtype=np.uint8)
     for i in range(height):
         for j in range(width):
-            color = np.array2string(img[i, j, :])
+            color = tuple(img[i, j, :])
             if color in to_color:
                 new_img[i, j] = 255
     return new_img
