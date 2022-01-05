@@ -33,12 +33,12 @@ def main():
 
     index1, index2 = find_word_regex(word_lengths)
 
+    with open(f'{args.image_path[:-4]}.txt', 'w') as save_file:
+        save_file.write(f'{index1} {index2}')
+
     end = datetime.datetime.now()
     duration = (end - start).total_seconds() * 1000
     print(f'Duration: {duration}ms')
-
-    with open(f'{args.image_path[:-4]}.txt', 'w') as save_file:
-        save_file.write(f'{index1} {index2}')
 
 def get_word_lengths_from_contours(contours, img_width):
     all_widths = []
