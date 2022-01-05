@@ -40,6 +40,9 @@ def main():
     img = Image.fromarray(img)
     img.save('detected.png')
 
+
+    regex_costam(word_lengths)
+
 def get_word_lengths_from_contours(contours, img_width):
     all_widths = []
     for line in contours:
@@ -254,15 +257,14 @@ def regex_costam(words_lengths):
     start = datetime.datetime.now()
     search_string = " ".join(["." * word_len for word_len in words_lengths])
 
-    with open("w_pustyni_i_w_puszczy.txt", "r") as f:
+    with open("w_pustyni_i_w_puszczy.txt", "r", encoding="utf-8") as f:
         txt = f.read()
     sentence = re.search(search_string, txt)
 
     end = datetime.datetime.now()
     duration = (end - start).microseconds / 1000
     first_word_index = txt[:sentence.start()].count(" ") + 1
-    last_word_index = first_word_index + sentence.group().count(" ")
-    print(f'Duration: {duration}ms')
+    last_word_index = first_word_index + sentence.group().count(" "))
 
     print(f"first word index:{first_word_index}, last word index:{last_word_index}")
     print(f'the sentence: {sentence.group()}')
