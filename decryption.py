@@ -1,4 +1,6 @@
 import argparse
+
+from numpy.lib.npyio import save
 from utils import (read_image)
 from PIL import Image
 import numpy as np
@@ -29,11 +31,14 @@ def main():
 
     word_lengths = get_word_lengths_from_contours(contours, img_width)
 
-    regex_costam(word_lengths)
+    index1, index2 = find_word_regex(word_lengths)
 
     end = datetime.datetime.now()
     duration = (end - start).total_seconds() * 1000
     print(f'Duration: {duration}ms')
+
+    with open(f'{args.image_path[:-4]}.txt', 'w') as save_file:
+        save_file.write(f'{index1} {index2}')
 
 def get_word_lengths_from_contours(contours, img_width):
     all_widths = []
@@ -116,10 +121,9 @@ def detect_contours(img):
     while final_contours:
         line_y = final_contours[0][1] + final_contours[0][3]/2
         detected_in_line = []
-        helper_dupa = final_contours[::]
+        copy_of_final_contours = final_contours[::]
 
-
-        for _, contour in enumerate(helper_dupa):
+        for _, contour in enumerate(copy_of_final_contours):
             if line_y - line_threshold < contour[1] < line_y + line_threshold:
                 detected_in_line.append(contour)
                 final_contours.remove(contour)
@@ -131,10 +135,6 @@ def detect_contours(img):
     lines.sort(key=lambda k: k[0][1])
 
     return lines
-
-def compare_contours(c1, c2):
-    if c1[0] < c2[0] and c1[1] <= c2[1]:
-        return -1
 
 def colors_statistics(img):
     width = img.shape[1]
@@ -180,7 +180,7 @@ def detect_words(img, stats):
 
     return new_img
 
-def regex_costam(words_lengths):
+def find_word_regex(words_lengths):
     search_string = " ".join(["." * word_len for word_len in words_lengths])
 
     with open("w_pustyni_i_w_puszczy.txt", "r", encoding="utf-8") as f:
@@ -190,8 +190,7 @@ def regex_costam(words_lengths):
     first_word_index = txt[:sentence.start()].count(" ") + 1
     last_word_index = first_word_index + sentence.group().count(" ")
 
-    print(f"first word index:{first_word_index}, last word index:{last_word_index}")
-    print(f'the sentence: {sentence.group()}')
+    return first_word_index, last_word_index
 
 
 if __name__ == '__main__':
