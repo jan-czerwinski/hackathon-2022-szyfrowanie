@@ -17,9 +17,14 @@ def main():
     print(f'Read image with shape{img.shape}')
 
     stats = colors_statistics(img)
-    print(stats)
+    # print(stats)
 
     img = detect_words(img, stats)
+
+    # modyfing img by reference
+    contours = detect_contours(img)
+
+    # wrap_words(contours)
 
     end = datetime.datetime.now()
     duration = (end - start).seconds
@@ -27,6 +32,78 @@ def main():
     print(img.shape)
     img = Image.fromarray(img)
     img.save('detected.png')
+
+def wrap_countours(contours):
+
+    # average_letter_width = 0
+
+    # for countour 
+    pass
+
+def detect_contours(img):
+
+    _, thresh1 = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY)
+    # Find the contours
+    contours, _ = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    detectedContours = [cv2.boundingRect(contour) for contour in contours]
+
+    print(detectedContours[0])
+
+    average_width = 0
+
+    for cont in detectedContours:
+        average_width += cont[2]
+
+    average_width /= len(detectedContours)
+    average_width *= 0.7
+
+    final_contours = [cont for cont in detectedContours if cont[2] > average_width]
+
+    print(f'contours amount = {len(final_contours)}')
+
+    for cnt in final_contours:
+        (x, y, w, h) = cnt
+        cv2.rectangle(img,(x, y), (x + w, y + h), (200,0,0), -1)
+
+    _, thresh = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY)
+
+    contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    detectedContours = [cv2.boundingRect(contour) for contour in contours]
+
+    for cont in detectedContours:
+        average_width += cont[2]
+
+    average_width /= len(detectedContours)
+    average_width *= 0.8
+
+    final_contours = [cont for cont in detectedContours if cont[2] > average_width]
+
+    print(len(final_contours))
+
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.7
+    color = (255, 0, 255)
+
+    id = 0
+    for cnt in final_contours:
+        (x, y, w, h) = cnt
+        cv2.rectangle(img,(x, y), (x + w, y + h), (200,0,0), -1)
+        cv2.putText(img, f'{id}', (x,y), font,
+                    font_scale, color, 1, cv2.LINE_AA)
+        id += 1
+
+    # final_contours.sort(key=)
+
+    return final_contours
+
+def compare_contours(c1, c2):
+    if c1[0] < c2[0] and c1[1] <= c2[1]:
+        return -1
+
+    # if c1[0] < c2[0]
+    
+        
 
 def colors_statistics(img):
     width = img.shape[1]
