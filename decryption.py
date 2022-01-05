@@ -3,6 +3,7 @@ from utils import (read_image)
 from PIL import Image
 import numpy as np
 import datetime
+import cv2
 
 def main():
     print('Script started')
@@ -16,9 +17,9 @@ def main():
     print(f'Read image with shape{img.shape}')
 
     stats = colors_statistics(img)
-    # print(stats)
+    print(stats)
 
-    img = detect_words(img, stats, treshold=1400)
+    img = detect_words(img, stats)
 
     end = datetime.datetime.now()
     duration = (end - start).seconds
@@ -43,14 +44,30 @@ def colors_statistics(img):
 
     return statistics
 
-def detect_words(img, stats, treshold=1000):
+def if_simmilar(first, second, diff=5):
+    f = np.array([int(x) for x in first[1:-1].split(' ') if x != ' ' and x != ''], dtype=int)
+    s = np.array([int(x) for x in second[1:-1].split(' ') if x != ' ' and x != ''], dtype=int)
+    calculated_diff = 0
+    for i in range(f.shape[0]):
+        calculated_diff += abs(f[i] - s[i])
+
+    if calculated_diff <= diff: return True
+    return False
+
+def detect_words(img, stats):
     height, width = img.shape[:2]
+
+    to_color = []
+    for k,v in stats.items():
+        for k_2, v_2 in stats.items():
+            if k != k_2 and v_2 > v and if_simmilar(k, k_2):
+                to_color.append(k)
 
     new_img = np.zeros(shape=(img.shape[0], img.shape[1]), dtype=np.uint8)
     for i in range(height):
         for j in range(width):
             color = np.array2string(img[i,j,:])
-            if stats[color] <= treshold:
+            if color in to_color:
                 new_img[i,j] = 255
 
     return new_img
