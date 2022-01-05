@@ -42,6 +42,7 @@ def wrap_countours(contours):
     pass
 
 def detect_contours(img):
+    literki = img.copy()
 
     _, thresh1 = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY)
     # Find the contours
@@ -126,10 +127,13 @@ def detect_contours(img):
         id = 0
         for cnt in line:
             (x, y, w, h) = cnt
-            cv2.rectangle(img,(x, y), (x + w, y + h), (200,0,0), -1)
-            cv2.putText(img, f'{id}', (x,y), font,
+            # cv2.rectangle(literki,(x, y), (x + w, y + h), (200,0,0), -1)
+            cv2.putText(literki, f'{id}', (x,y), font,
                         font_scale, color, 1, cv2.LINE_AA)
             id += 1
+
+    literki = Image.fromarray(literki)
+    literki.save('literki.png')
 
     # final_contours.sort(key=)
 
