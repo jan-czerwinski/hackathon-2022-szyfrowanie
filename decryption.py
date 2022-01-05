@@ -167,15 +167,11 @@ def detect_words(img, stats):
                 to_color[k] = 1
 
     new_img = np.zeros(shape=(img.shape[0], img.shape[1]), dtype=np.uint8)
-    doopa = datetime.datetime.now()
     for i in range(height):
         for j in range(width):
             color = np.array2string(img[i, j, :])
             if color in to_color:
                 new_img[i, j] = 255
-    goowno = datetime.datetime.now()
-    duration = (goowno - doopa).total_seconds() * 1000
-    print(f'DOOOOOpa {duration}ms')
     return new_img
 
 def find_word_regex(words_lengths):
