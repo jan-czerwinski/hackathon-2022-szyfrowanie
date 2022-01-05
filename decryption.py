@@ -21,7 +21,6 @@ def main():
     img_width = img.shape[1]
 
     stats = colors_statistics(img)
-    # print(stats)
 
     img = detect_words(img, stats)
 
@@ -29,19 +28,12 @@ def main():
     contours = detect_contours(img)
 
     word_lengths = get_word_lengths_from_contours(contours, img_width)
-    print(word_lengths)
-
-    # wrap_words(contours)
-
-    end = datetime.datetime.now()
-    duration = (end - start).seconds
-    print(f'Duration: {duration}s')
-    print(img.shape)
-    img = Image.fromarray(img)
-    img.save('detected.png')
-
 
     regex_costam(word_lengths)
+
+    end = datetime.datetime.now()
+    duration = (end - start).total_seconds() * 1000
+    print(f'Duration: {duration}ms')
 
 def get_word_lengths_from_contours(contours, img_width):
     all_widths = []
@@ -49,17 +41,11 @@ def get_word_lengths_from_contours(contours, img_width):
         for val in line:
             all_widths.append(val[2])
 
-    # print(all_widths)
-    median = all_widths[len(all_widths) // 2]
-    print(f'Median = {median}')
-    
+    median = all_widths[len(all_widths) // 2]    
     word_lengths = []
     diffs = []
-
     all_contours = []
-
     i = 0
-    print('Contours: ', contours[0])
     for line in contours:
         all_contours += line
         for i in range(len(line) - 1):
@@ -73,20 +59,11 @@ def get_word_lengths_from_contours(contours, img_width):
                 diffs.append(median // 2 - 1)
 
             diffs.append(current_diff)
-
-            # if i > 30 and i < 35:
-            #     print(i)
-            #     print(diffs[i])
-            #     print(cont_1)
-            #     print(cont_2)
-
             i += 1
 
         last_cont = line[-1]
         diffs.append(img_width - last_cont[0] - last_cont[2])
         i += 1
-
-    print(diffs)
 
     tmp_len = 0
     for i, diff in enumerate(diffs):
@@ -100,15 +77,11 @@ def get_word_lengths_from_contours(contours, img_width):
             
 
 def detect_contours(img):
-    literki = img.copy()
-
     _, thresh1 = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY)
     # Find the contours
     contours, _ = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     detectedContours = [cv2.boundingRect(contour) for contour in contours]
-
-    # print(detectedContours[0])
 
     average_width = 0
 
@@ -120,12 +93,11 @@ def detect_contours(img):
 
     final_contours = [cont for cont in detectedContours if cont[2] > average_width]
 
-    # print(f'contours amount = {len(final_contours)}')
-
     for cnt in final_contours:
         (x, y, w, h) = cnt
         cv2.rectangle(img,(x, y), (x + w, y + h), (200,0,0), -1)
 
+    
     _, thresh = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY)
 
     contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE, hierarchy= cv2.RETR_FLOODFILL)
@@ -139,74 +111,30 @@ def detect_contours(img):
 
     final_contours = [cont for cont in detectedContours if cont[2] > average_width]
 
-    # print(len(final_contours))
-
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.2
-    color = (255, 0, 255)
-
-
-    # final_contours = sorted(final_contours , key=lambda k: [k[0], k[1]])
-
-
-
-    # print("="*80)
-    # print(helper_dupa)
-    # print(final_contours)
-
     lines = []
     line_threshold = final_contours[0][3]
-    print("NOWY TRHEAHSAD: ", line_threshold)
     while final_contours:
         line_y = final_contours[0][1] + final_contours[0][3]/2
-        # print(line_y)
         detected_in_line = []
         helper_dupa = final_contours[::]
 
 
-        for index, contour in enumerate(helper_dupa):
+        for _, contour in enumerate(helper_dupa):
             if line_y - line_threshold < contour[1] < line_y + line_threshold:
                 detected_in_line.append(contour)
                 final_contours.remove(contour)
         lines.append(detected_in_line)
-
-    print("="*80)    
-    for i in lines:
-        print(i)
 
     for line in lines:
         line.sort(key=lambda k: k[0])
 
     lines.sort(key=lambda k: k[0][1])
 
-    print("="*80)    
-    for i in lines:
-        print(i)
-
-
-    for line in lines:
-        id = 0
-        for cnt in line:
-            (x, y, w, h) = cnt
-            # cv2.rectangle(literki,(x, y), (x + w, y + h), (200,0,0), -1)
-            cv2.putText(literki, f'{id}', (x,y), font,
-                        font_scale, color, 1, cv2.LINE_AA)
-            id += 1
-
-    literki = Image.fromarray(literki)
-    literki.save('literki.png')
-
-    # final_contours.sort(key=)
-
     return lines
 
 def compare_contours(c1, c2):
     if c1[0] < c2[0] and c1[1] <= c2[1]:
         return -1
-
-    # if c1[0] < c2[0]
-    
-        
 
 def colors_statistics(img):
     width = img.shape[1]
@@ -252,19 +180,15 @@ def detect_words(img, stats):
 
     return new_img
 
-
 def regex_costam(words_lengths):
-    start = datetime.datetime.now()
     search_string = " ".join(["." * word_len for word_len in words_lengths])
 
     with open("w_pustyni_i_w_puszczy.txt", "r", encoding="utf-8") as f:
         txt = f.read()
     sentence = re.search(search_string, txt)
 
-    end = datetime.datetime.now()
-    duration = (end - start).microseconds / 1000
     first_word_index = txt[:sentence.start()].count(" ") + 1
-    last_word_index = first_word_index + sentence.group().count(" "))
+    last_word_index = first_word_index + sentence.group().count(" ")
 
     print(f"first word index:{first_word_index}, last word index:{last_word_index}")
     print(f'the sentence: {sentence.group()}')
