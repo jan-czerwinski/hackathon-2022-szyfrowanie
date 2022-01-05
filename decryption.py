@@ -28,6 +28,7 @@ def main():
     contours = detect_contours(img)
 
     word_lengths = get_word_lengths_from_contours(contours, img_width)
+    print(word_lengths)
 
     # wrap_words(contours)
 
@@ -44,22 +45,42 @@ def get_word_lengths_from_contours(contours, img_width):
         for val in line:
             all_widths.append(val[2])
 
-    print(all_widths)
+    # print(all_widths)
     median = all_widths[len(all_widths) // 2]
-    print(median)
+    print(f'Median = {median}')
     
     word_lengths = []
     diffs = []
-    
+
+    all_contours = []
+
+    i = 0
+    print('Contours: ', contours[0])
     for line in contours:
+        all_contours += line
         for i in range(len(line) - 1):
+
             cont_1 = line[i]
             cont_2 = line[i+1]
 
-            diffs.append(abs(cont_1[0] + cont_1[2] - cont_2[0]))
+            current_diff = abs(cont_1[0] + cont_1[2] - cont_2[0])
+
+            if cont_1[2] > 1.75 * median:
+                diffs.append(median // 2 - 1)
+
+            diffs.append(current_diff)
+
+            # if i > 30 and i < 35:
+            #     print(i)
+            #     print(diffs[i])
+            #     print(cont_1)
+            #     print(cont_2)
+
+            i += 1
 
         last_cont = line[-1]
         diffs.append(img_width - last_cont[0] - last_cont[2])
+        i += 1
 
     print(diffs)
 
@@ -117,7 +138,7 @@ def detect_contours(img):
     # print(len(final_contours))
 
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.7
+    font_scale = 0.2
     color = (255, 0, 255)
 
 
@@ -130,14 +151,17 @@ def detect_contours(img):
     # print(final_contours)
 
     lines = []
+    line_threshold = final_contours[0][3]
+    print("NOWY TRHEAHSAD: ", line_threshold)
     while final_contours:
         line_y = final_contours[0][1] + final_contours[0][3]/2
         # print(line_y)
         detected_in_line = []
         helper_dupa = final_contours[::]
 
+
         for index, contour in enumerate(helper_dupa):
-            if line_y - 40 < contour[1] < line_y + 40:
+            if line_y - line_threshold < contour[1] < line_y + line_threshold:
                 detected_in_line.append(contour)
                 final_contours.remove(contour)
         lines.append(detected_in_line)
