@@ -17,6 +17,8 @@ def main():
     img = read_image(args.image_path)
     print(f'Read image with shape{img.shape}')
 
+    img_width = img.shape[1]
+
     stats = colors_statistics(img)
     # print(stats)
 
@@ -24,6 +26,8 @@ def main():
 
     # modyfing img by reference
     contours = detect_contours(img)
+
+    word_lengths = get_word_lengths_from_contours(contours, img_width)
 
     # wrap_words(contours)
 
@@ -34,12 +38,41 @@ def main():
     img = Image.fromarray(img)
     img.save('detected.png')
 
-def wrap_countours(contours):
+def get_word_lengths_from_contours(contours, img_width):
+    all_widths = []
+    for line in contours:
+        for val in line:
+            all_widths.append(val[2])
 
-    # average_letter_width = 0
+    print(all_widths)
+    median = all_widths[len(all_widths) // 2]
+    print(median)
+    
+    word_lengths = []
+    diffs = []
+    
+    for line in contours:
+        for i in range(len(line) - 1):
+            cont_1 = line[i]
+            cont_2 = line[i+1]
 
-    # for countour 
-    pass
+            diffs.append(abs(cont_1[0] + cont_1[2] - cont_2[0]))
+
+        last_cont = line[-1]
+        diffs.append(img_width - last_cont[0] - last_cont[2])
+
+    print(diffs)
+
+    tmp_len = 0
+    for i, diff in enumerate(diffs):
+        if diff < median:
+            tmp_len += 1
+            continue
+        word_lengths.append(tmp_len+1)
+        tmp_len = 0
+
+    return word_lengths
+            
 
 def detect_contours(img):
     literki = img.copy()
@@ -137,9 +170,7 @@ def detect_contours(img):
 
     # final_contours.sort(key=)
 
-
-
-    return final_contours
+    return lines
 
 def compare_contours(c1, c2):
     if c1[0] < c2[0] and c1[1] <= c2[1]:
