@@ -137,27 +137,14 @@ def detect_contours(img):
     return lines
 
 def colors_statistics(img):
-    width = img.shape[1]
-    height = img.shape[0]
-
-    statistics = {}
-
-    # for i in range(height):
-    #     for j in range(width):
-    #         color = np.array2string(img[i,j,:])
-    #         if color not in statistics:
-    #             statistics[color] = 1
-    #         else:
-    #             statistics[color] += 1
     im_pil = Image.fromarray(img)
     stats_arr = im_pil.getcolors(maxcolors=256)
 
     colors_statistics = {}
     for color in stats_arr:
-        color_str = f'[{color[1][0]} {color[1][1]} {color[1][2]}]'
+        color_str = np.array2string(np.array([color[1][0], color[1][1], color[1][2]]))
         colors_statistics[color_str] = color[0]
     
-    print(colors_statistics)
     return colors_statistics
 
 def if_simmilar(first, second, diff=5):
@@ -169,12 +156,6 @@ def if_simmilar(first, second, diff=5):
 
     if calculated_diff <= diff: return True
     return False
-
-# def map_to_binary(img_cell, to_color):
-#     color = np.array2string(img_cell)
-#     if color in to_color:
-#         return 255
-#     return 0
 
 def detect_words(img, stats):
     height, width = img.shape[:2]
@@ -192,8 +173,6 @@ def detect_words(img, stats):
             color = np.array2string(img[i, j, :])
             if color in to_color:
                 new_img[i, j] = 255
-    # mapper_function = np.vectorize(map_to_binary)
-    # new_img = mapper_function(img[:,:,:], to_color)
     goowno = datetime.datetime.now()
     duration = (goowno - doopa).total_seconds() * 1000
     print(f'DOOOOOpa {duration}ms')
