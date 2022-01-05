@@ -1,4 +1,5 @@
 import argparse
+from typing import final
 from utils import (read_image)
 from PIL import Image
 import numpy as np
@@ -48,7 +49,7 @@ def detect_contours(img):
 
     detectedContours = [cv2.boundingRect(contour) for contour in contours]
 
-    print(detectedContours[0])
+    # print(detectedContours[0])
 
     average_width = 0
 
@@ -60,7 +61,7 @@ def detect_contours(img):
 
     final_contours = [cont for cont in detectedContours if cont[2] > average_width]
 
-    print(f'contours amount = {len(final_contours)}')
+    # print(f'contours amount = {len(final_contours)}')
 
     for cnt in final_contours:
         (x, y, w, h) = cnt
@@ -68,7 +69,7 @@ def detect_contours(img):
 
     _, thresh = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY)
 
-    contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE, hierarchy= cv2.RETR_FLOODFILL)
     detectedContours = [cv2.boundingRect(contour) for contour in contours]
 
     for cont in detectedContours:
@@ -79,21 +80,60 @@ def detect_contours(img):
 
     final_contours = [cont for cont in detectedContours if cont[2] > average_width]
 
-    print(len(final_contours))
+    # print(len(final_contours))
 
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.7
     color = (255, 0, 255)
 
-    id = 0
-    for cnt in final_contours:
-        (x, y, w, h) = cnt
-        cv2.rectangle(img,(x, y), (x + w, y + h), (200,0,0), -1)
-        cv2.putText(img, f'{id}', (x,y), font,
-                    font_scale, color, 1, cv2.LINE_AA)
-        id += 1
+
+    # final_contours = sorted(final_contours , key=lambda k: [k[0], k[1]])
+
+
+
+    # print("="*80)
+    # print(helper_dupa)
+    # print(final_contours)
+
+    lines = []
+    while final_contours:
+        line_y = final_contours[0][1] + final_contours[0][3]/2
+        # print(line_y)
+        detected_in_line = []
+        helper_dupa = final_contours[::]
+
+        for index, contour in enumerate(helper_dupa):
+            if line_y - 40 < contour[1] < line_y + 40:
+                detected_in_line.append(contour)
+                final_contours.remove(contour)
+        lines.append(detected_in_line)
+
+    print("="*80)    
+    for i in lines:
+        print(i)
+
+    for line in lines:
+        line.sort(key=lambda k: k[0])
+
+    lines.sort(key=lambda k: k[0][1])
+
+    print("="*80)    
+    for i in lines:
+        print(i)
+
+
+    for line in lines:
+        id = 0
+        for cnt in line:
+            (x, y, w, h) = cnt
+            cv2.rectangle(img,(x, y), (x + w, y + h), (200,0,0), -1)
+            cv2.putText(img, f'{id}', (x,y), font,
+                        font_scale, color, 1, cv2.LINE_AA)
+            id += 1
 
     # final_contours.sort(key=)
+
+
 
     return final_contours
 
